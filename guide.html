@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>대화형 구글 자동화 스크립트 가이드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: A task-oriented, interactive guide using a fixed sidebar for navigation and a main content area that displays sections one at a time. The setup process is broken into an interactive accordion to guide users step-by-step, preventing overwhelm. This structure was chosen because the source report is a procedural manual, and a linear, guided flow is the most user-friendly way to present complex setup instructions. -->
+    <!-- Visualization & Content Choices: Report Info: Script setup process. -> Goal: Guide user. -> Presentation: Interactive accordion for steps. -> Interaction: Click to expand/collapse steps. -> Justification: Breaks down complexity. | Report Info: System architecture (Sheets -> Script -> Apps). -> Goal: Inform. -> Presentation: HTML/CSS diagram. -> Interaction: Hover to highlight and see details. -> Justification: Visually clarifies the system flow better than text alone. | Report Info: Sheet headers/rules. -> Goal: Organize/Inform. -> Presentation: Styled HTML tables. -> Interaction: Copy-to-clipboard buttons. -> Justification: Easy-to-read reference and reduces user error. | Library/Method: Vanilla JS for interactions, Tailwind CSS for layout/styling. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8fafc;
+        }
+        .nav-link.active {
+            background-color: #e0f2f1;
+            color: #00796b;
+            font-weight: 700;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+        .table-auto th, .table-auto td {
+            border: 1px solid #e2e8f0;
+            padding: 8px 12px;
+        }
+        .table-auto th {
+            background-color: #f1f5f9;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background-color: #475569;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .code-block:hover .copy-btn {
+            opacity: 1;
+        }
+        .diagram-box {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .diagram-box:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: #00796b;
+        }
+        .diagram-arrow {
+            font-size: 2rem;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div class="flex min-h-screen">
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 bg-white border-r border-slate-200 p-6 fixed h-full hidden lg:block">
+            <h1 class="text-2xl font-bold text-teal-700 mb-8">자동화 비서 가이드</h1>
+            <nav id="sidebar-nav">
+                <ul>
+                    <li><a href="#intro" class="nav-link block p-3 rounded-lg hover:bg-slate-100 transition-colors">👋 소개 및 주요 기능</a></li>
+                    <li><a href="#setup" class="nav-link block p-3 rounded-lg hover:bg-slate-100 transition-colors">🚀 완벽 설정 가이드</a></li>
+                    <li><a href="#usage" class="nav-link block p-3 rounded-lg hover:bg-slate-100 transition-colors">✍️ 매일 사용법</a></li>
+                    <li><a href="#troubleshooting" class="nav-link block p-3 rounded-lg hover:bg-slate-100 transition-colors">🆘 문제 해결 & 고급 기능</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="lg:ml-64 flex-1 p-4 sm:p-6 md:p-10">
+            
+            <!-- Mobile Navigation -->
+            <div class="lg:hidden mb-6">
+                <select id="mobile-nav" class="w-full p-3 border rounded-lg bg-white border-slate-300">
+                    <option value="#intro">소개 및 주요 기능</option>
+                    <option value="#setup">완벽 설정 가이드</option>
+                    <option value="#usage">매일 사용법</option>
+                    <option value="#troubleshooting">문제 해결 & 고급 기능</option>
+                </select>
+            </div>
+
+
+            <!-- Introduction Section -->
+            <section id="intro" class="content-section">
+                <div class="bg-white p-8 rounded-2xl shadow-sm">
+                    <h2 class="text-3xl font-bold mb-4 text-teal-800">📝 구글 시트-캘린더-Tasks 자동화 스크립트</h2>
+                    <p class="text-lg text-slate-600 mb-8">안녕하세요! 이 가이드는 구글 시트를 당신의 똑똑한 비서로 만들어주는 자동화 스크립트의 모든 것을 담고 있습니다. 시트에 내용을 입력하는 것만으로 구글 캘린더 일정과 구글 할 일(Tasks) 목록을 자동으로 관리하는 방법을 알아보세요!</p>
+                    
+                    <div class="my-12">
+                        <h3 class="text-2xl font-bold mb-6 text-center text-slate-700">자동화 흐름 한눈에 보기</h3>
+                        <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4">
+                            <div class="diagram-box bg-amber-100 p-6 rounded-xl text-center w-48">
+                                <div class="text-4xl mb-2">📄</div>
+                                <h4 class="font-bold text-amber-800">Google Sheets</h4>
+                                <p class="text-sm text-amber-700">모든 정보의 시작점</p>
+                            </div>
+                            <div class="diagram-arrow">→</div>
+                            <div class="diagram-box bg-sky-100 p-6 rounded-xl text-center w-48">
+                                <div class="text-4xl mb-2">🤖</div>
+                                <h4 class="font-bold text-sky-800">Apps Script</h4>
+                                <p class="text-sm text-sky-700">자동화의 핵심 엔진</p>
+                            </div>
+                            <div class="diagram-arrow">→</div>
+                            <div class="flex space-x-4">
+                               <div class="diagram-box bg-green-100 p-6 rounded-xl text-center w-48">
+                                    <div class="text-4xl mb-2">📅</div>
+                                    <h4 class="font-bold text-green-800">Google Calendar</h4>
+                                    <p class="text-sm text-green-700">일정 자동 등록</p>
+                                </div>
+                                <div class="diagram-box bg-indigo-100 p-6 rounded-xl text-center w-48">
+                                    <div class="text-4xl mb-2">✅</div>
+                                    <h4 class="font-bold text-indigo-800">Google Tasks</h4>
+                                    <p class="text-sm text-indigo-700">할 일 자동 등록</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 class="text-2xl font-bold mt-12 mb-6 text-slate-700">✨ 주요 기능</h3>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-slate-100 p-6 rounded-lg">
+                            <h4 class="font-bold text-lg mb-2">🔗 통합 관리</h4>
+                            <p class="text-slate-600">하나의 시트에서 모든 일정과 할 일을 추가, 수정, 삭제하면 캘린더와 Tasks에 자동으로 반영됩니다.</p>
+                        </div>
+                        <div class="bg-slate-100 p-6 rounded-lg">
+                            <h4 class="font-bold text-lg mb-2">🔍 안전한 미리보기</h4>
+                            <p class="text-slate-600">실제 동기화 전에 변경될 내용을 요약해서 보여주고 확인받아 실수를 방지합니다.</p>
+                        </div>
+                        <div class="bg-slate-100 p-6 rounded-lg">
+                            <h4 class="font-bold text-lg mb-2">🗑️ 지능적인 삭제 감지</h4>
+                            <p class="text-slate-600">시트에서 행을 그냥 지워도, 스크립트가 알아서 해당 항목을 찾아 삭제해줍니다.</p>
+                        </div>
+                        <div class="bg-slate-100 p-6 rounded-lg">
+                            <h4 class="font-bold text-lg mb-2">🎨 조건부 색상 지정</h4>
+                            <p class="text-slate-600">시트의 특정 값(예: '중요')에 따라 캘린더 일정의 색상을 다르게 칠할 수 있습니다.</p>
+                        </div>
+                        <div class="bg-slate-100 p-6 rounded-lg">
+                            <h4 class="font-bold text-lg mb-2">📊 상세한 피드백</h4>
+                            <p class="text-slate-600">각 작업의 성공/실패 여부를 시트에 직접 기록해주어 원인 파악이 쉽습니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Setup Section -->
+            <section id="setup" class="content-section">
+                <div class="bg-white p-8 rounded-2xl shadow-sm">
+                    <h2 class="text-3xl font-bold mb-4 text-teal-800">🚀 처음부터 끝까지 따라하는 완벽 설정</h2>
+                    <p class="text-lg text-slate-600 mb-8">가장 중요하고 조금 복잡할 수 있는 부분이지만, 아래 순서대로 한 번만 설정하면 끝입니다! 각 단계를 클릭하여 내용을 확인하세요.</p>
+                    
+                    <div id="accordion-container" class="space-y-4">
+                        <!-- Step 1 -->
+                        <div class="accordion-item border border-slate-200 rounded-lg">
+                            <button class="accordion-header w-full text-left p-5 bg-slate-100 hover:bg-slate-200 rounded-t-lg text-xl font-semibold flex justify-between items-center transition">
+                                1단계: 스프레드시트와 시트 만들기
+                                <span class="transform transition-transform">▼</span>
+                            </button>
+                            <div class="accordion-content">
+                                <div class="p-6 border-t border-slate-200">
+                                    <p class="mb-4">자동화 시스템의 집과 방(시트)들을 만듭니다.</p>
+                                    <ol class="list-decimal list-inside space-y-2">
+                                        <li>[Google 시트]로 이동하여 **새 스프레드시트 시작하기** (+) 버튼을 클릭합니다.</li>
+                                        <li>파일 이름을 `스마트 업무 관리`처럼 알아보기 쉽게 변경해주세요.</li>
+                                        <li>기본 `시트1`의 이름을 더블클릭하여 **`데이터`** 라고 변경합니다.</li>
+                                        <li>왼쪽 아래의 **+** (시트 추가) 버튼을 눌러 새 시트를 추가하고, 이름을 **`설정`** 이라고 변경합니다.</li>
+                                        <li>다시 **+** 버튼을 눌러 새 시트를 하나 더 추가하고, 이름을 **`색상 규칙`** 이라고 변경합니다.</li>
+                                    </ol>
+                                    <div class="mt-4 p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg">
+                                        ✅ **확인**: 스프레드시트 하단에 `데이터`, `설정`, `색상 규칙` 3개의 시트가 보이면 성공입니다.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 2 -->
+                        <div class="accordion-item border border-slate-200 rounded-lg">
+                            <button class="accordion-header w-full text-left p-5 bg-slate-100 hover:bg-slate-200 text-xl font-semibold flex justify-between items-center transition">
+                                2단계: 각 시트의 '설계도' 그리기 (헤더 입력)
+                                 <span class="transform transition-transform">▼</span>
+                            </button>
+                             <div class="accordion-content">
+                                <div class="p-6 border-t border-slate-200 space-y-6">
+                                    <p>각 시트에 어떤 정보를 적을지 제목 행(헤더)을 만들어야 합니다. **오타 없이 정확히 입력해주세요!**</p>
+                                    <div>
+                                        <h4 class="font-bold text-lg mb-2">1. `설정` 시트</h4>
+                                        <p class="mb-2">A1 셀부터 아래 내용을 차례대로 입력하세요. B열은 일단 비워둡니다.</p>
+                                        <div class="overflow-x-auto"><table class="table-auto w-full text-sm text-left"><thead><tr><th>(A열) 설정 항목 이름</th></tr></thead><tbody><tr><td>캘린더 ID</td></tr><tr><td>Task List ID</td></tr><tr><td>데이터 시트 이름</td></tr><tr><td>헤더 행 번호</td></tr><tr><td>데이터 시작 행 번호</td></tr><tr><td>색상 규칙 시트 이름</td></tr><tr><td>구분 열 번호</td></tr><tr><td>제목 열 번호</td></tr><tr><td>시작일 열 번호</td></tr><tr><td>시작 시간 열 번호</td></tr><tr><td>종료일 열 번호</td></tr><tr><td>종료 시간 열 번호</td></tr><tr><td>마감일 열 번호 (Tasks)</td></tr><tr><td>학년 열 번호</td></tr><tr><td>설명 열 번호</td></tr><tr><td>상태 열 번호</td></tr><tr><td>Sync ID 열 번호</td></tr><tr><td>동기화 결과 열 번호</td></tr></tbody></table></div>
+                                    </div>
+                                     <div>
+                                        <h4 class="font-bold text-lg mb-2">2. `데이터` 시트</h4>
+                                        <p class="mb-2">A1 셀부터 오른쪽으로 차례대로 제목을 입력하세요.</p>
+                                        <div class="overflow-x-auto"><table class="table-auto w-full text-sm text-left"><thead><tr><th>A열</th><th>B열</th><th>C열</th><th>D열</th><th>E열</th><th>F열</th><th>G열</th><th>H열</th><th>I열</th><th>J열</th><th>K열</th><th>L열</th></tr></thead><tbody><tr><td>구분</td><td>제목</td><td>상태</td><td>시작일</td><td>시작 시간</td><td>종료일</td><td>종료 시간</td><td>마감일 (Tasks)</td><td>학년</td><td>설명</td><td>Sync ID</td><td>동기화 결과</td></tr></tbody></table></div>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-lg mb-2">3. `색상 규칙` 시트</h4>
+                                        <p class="mb-2">A1 셀부터 오른쪽으로 차례대로 제목을 입력하세요.</p>
+                                        <div class="overflow-x-auto"><table class="table-auto w-full text-sm text-left"><thead><tr><th>A열</th><th>B열</th><th>C열</th></tr></thead><tbody><tr><td>대상 열 설정 이름</td><td>검색 값</td><td>색상 ID</td></tr></tbody></table></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3 -->
+                        <div class="accordion-item border border-slate-200 rounded-lg">
+                           <button class="accordion-header w-full text-left p-5 bg-slate-100 hover:bg-slate-200 text-xl font-semibold flex justify-between items-center transition">
+                                3단계: 스크립트 설치 및 권한 부여
+                                 <span class="transform transition-transform">▼</span>
+                            </button>
+                             <div class="accordion-content">
+                                <div class="p-6 border-t border-slate-200">
+                                     <p class="mb-4">자동화 비서에게 영혼(코드)을 불어넣고 일할 권한을 줄 차례입니다.</p>
+                                    <ol class="list-decimal list-inside space-y-3">
+                                        <li>상단 메뉴에서 **[확장 프로그램] > [Apps Script]** 를 클릭합니다.</li>
+                                        <li>새 탭에서 스크립트 편집기가 열리면, 기존 코드를 모두 지우고 준비된 스크립트 코드 전체를 복사해서 붙여넣으세요.</li>
+                                        <li>디스켓 모양의 **[프로젝트 저장]** 아이콘을 누릅니다.</li>
+                                        <li>스프레드시트 탭으로 돌아와 **페이지를 새로고침(F5)** 합니다.</li>
+                                        <li>**`동기화 관리`** 라는 새 메뉴가 상단에 생겼을 겁니다. **[동기화 관리] > [캘린더/Tasks와 동기화 실행]**을 클릭하세요.</li>
+                                        <li>`권한 필요` 창이 뜨면 **[권한 검토]**를 누르고, 본인 구글 계정을 선택하세요.</li>
+                                        <li class="p-4 bg-amber-50 border border-amber-200 text-amber-900 rounded-lg">
+                                            "이 앱은 Google에서 확인하지 않았습니다" 라는 경고가 표시됩니다. **걱정하지 마세요!** 우리가 직접 만든 스크립트라 뜨는 정상적인 메시지입니다.
+                                            <ul class="list-disc list-inside mt-2">
+                                                <li>**[고급]** (파란색 글씨)을 클릭합니다.</li>
+                                                <li>화면 맨 아래에 나타나는 **[... (안전하지 않음)으로 이동]** 링크를 클릭합니다.</li>
+                                            </ul>
+                                        </li>
+                                        <li>마지막으로 **[허용]** 버튼을 누르면 모든 권한 부여가 끝납니다!</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 4 -->
+                        <div class="accordion-item border border-slate-200 rounded-lg">
+                           <button class="accordion-header w-full text-left p-5 bg-slate-100 hover:bg-slate-200 text-xl font-semibold flex justify-between items-center transition">
+                                4단계: `설정` 시트 값 완성하기
+                                 <span class="transform transition-transform">▼</span>
+                            </button>
+                             <div class="accordion-content">
+                                <div class="p-6 border-t border-slate-200 space-y-6">
+                                     <p>스크립트가 일하는 데 필요한 진짜 정보들을 `설정` 시트의 B열에 채워 넣습니다.</p>
+                                     <div>
+                                        <h4 class="font-bold text-lg mb-2">1. 캘린더 ID 입력</h4>
+                                        <ul class="list-disc list-inside space-y-1">
+                                            <li>구글 캘린더로 가서 연동할 캘린더의 **[설정 및 공유]** 메뉴로 들어갑니다.</li>
+                                            <li>`캘린더 통합` 섹션의 **캘린더 ID**를 복사하여 `설정` 시트의 `B1` 셀에 붙여넣습니다.</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-lg mb-2">2. Task List ID 입력</h4>
+                                         <ul class="list-disc list-inside space-y-1">
+                                            <li>시트 메뉴의 **[동기화 관리] > [Task List ID 확인]**을 클릭하세요.</li>
+                                            <li>알림창이 뜨면 **[실행] > [실행 기록]** 메뉴로 이동합니다.</li>
+                                            <li>로그에서 원하는 할 일 목록의 **ID**를 복사하여 `설정` 시트의 `B2` 셀에 붙여넣습니다.</li>
+                                        </ul>
+                                    </div>
+                                    <div class="p-4 bg-blue-50 border border-blue-200 text-blue-800 rounded-lg">
+                                        <h4 class="font-bold text-lg mb-2">3. 열 번호 입력 (가장 중요!)</h4>
+                                        <p class="mb-2">스크립트에게 `데이터` 시트의 어떤 열에 어떤 정보가 있는지 숫자로 알려줘야 합니다. (`A열=1, B열=2, ...`)</p>
+                                        <div class="overflow-x-auto"><table class="table-auto w-full text-sm text-left bg-white"><thead><tr><th>`설정` 시트의 항목</th><th>`데이터` 시트의 해당 열</th><th>입력할 숫자</th></tr></thead><tbody><tr><td>구분 열 번호</td><td>A열 (구분)</td><td>1</td></tr><tr><td>제목 열 번호</td><td>B열 (제목)</td><td>2</td></tr><tr><td>상태 열 번호</td><td>C열 (상태)</td><td>3</td></tr><tr><td>시작일 열 번호</td><td>D열 (시작일)</td><td>4</td></tr><tr><td>시작 시간 열 번호</td><td>E열 (시작 시간)</td><td>5</td></tr><tr><td>종료일 열 번호</td><td>F열 (종료일)</td><td>6</td></tr><tr><td>종료 시간 열 번호</td><td>G열 (종료 시간)</td><td>7</td></tr><tr><td>마감일 열 번호 (Tasks)</td><td>H열 (마감일)</td><td>8</td></tr><tr><td>학년 열 번호</td><td>I열 (학년)</td><td>9</td></tr><tr><td>설명 열 번호</td><td>J열 (설명)</td><td>10</td></tr><tr><td>Sync ID 열 번호</td><td>K열 (Sync ID)</td><td>11</td></tr><tr><td>동기화 결과 열 번호</td><td>L열 (동기화 결과)</td><td>12</td></tr></tbody></table></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- Usage Section -->
+            <section id="usage" class="content-section">
+                <div class="bg-white p-8 rounded-2xl shadow-sm">
+                    <h2 class="text-3xl font-bold mb-4 text-teal-800">✍️ 매일 사용법</h2>
+                    <p class="text-lg text-slate-600 mb-8">모든 설정이 끝났습니다. 이제 `데이터` 시트만 잘 활용하면 됩니다. 아래 규칙에 따라 데이터를 입력하고 동기화를 실행하세요.</p>
+                    
+                    <h3 class="text-2xl font-bold mt-8 mb-4">데이터 입력 규칙</h3>
+                    <div class="overflow-x-auto">
+                        <table class="table-auto w-full text-left">
+                            <thead class="bg-slate-100">
+                                <tr><th>컬럼명 (헤더)</th><th>설명</th><th>예시</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><strong>구분</strong> (필수)</td><td>`calendar` 또는 `tasks` 라고 입력합니다. 캘린더에 등록할지, 할 일 목록에 넣을지 결정해요.</td><td>`calendar`</td></tr>
+                                <tr><td><strong>제목</strong> (필수)</td><td>캘린더 일정이나 할 일의 제목입니다.</td><td>`주간 회의`</td></tr>
+                                <tr><td><strong>상태</strong></td><td>`취소됨` 이라고 입력하면 삭제, `운영완료`는 Tasks 완료 처리, 비워두면 활성 상태입니다.</td><td>`취소됨`</td></tr>
+                                <tr><td><strong>시작일 / 종료일</strong></td><td>`YYYY-MM-DD` 형식으로 날짜를 입력합니다. (예: 2023-10-27)</td><td>`2023-12-25`</td></tr>
+                                <tr><td><strong>시작 시간 / 종료 시간</strong></td><td>`HH:MM` 형식으로 시간을 입력합니다. 비워두면 '하루 종일' 일정으로 만들어져요.</td><td>`14:00`</td></tr>
+                                <tr><td><strong>마감일 (Tasks)</strong></td><td>Tasks 할 일의 마감일입니다. `YYYY-MM-DD` 형식으로 입력합니다.</td><td>`2023-12-31`</td></tr>
+                                <tr><td><strong>학년 / 설명 등</strong></td><td>캘린더/Tasks 설명란에 추가될 내용입니다. 자유롭게 입력하세요.</td><td>`3학년 대상`</td></tr>
+                                <tr class="bg-red-50"><td><strong>Sync ID / 동기화 결과</strong></td><td class="text-red-700 font-semibold">절대 수정하지 마세요! 스크립트가 자동으로 채우는 영역입니다.</td><td>(자동으로 채워짐)</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-8 mt-12">
+                        <div>
+                            <h3 class="text-2xl font-bold mb-4">작업별 사용법</h3>
+                             <div class="space-y-4">
+                                <div class="p-4 bg-slate-100 rounded-lg">
+                                    <h4 class="font-semibold text-lg">✨ 만들기</h4>
+                                    <p>`데이터` 시트의 새 행에 `구분`과 `제목`을 포함한 정보를 입력하세요.</p>
+                                </div>
+                                <div class="p-4 bg-slate-100 rounded-lg">
+                                    <h4 class="font-semibold text-lg">✏️ 수정하기</h4>
+                                    <p>이미 동기화된 행의 제목, 날짜 등을 수정한 뒤 다시 동기화를 실행하면 됩니다.</p>
+                                </div>
+                                <div class="p-4 bg-slate-100 rounded-lg">
+                                    <h4 class="font-semibold text-lg">🗑️ 삭제하기</h4>
+                                    <p>권장 방법은 `상태` 열에 `취소됨`을 입력하는 것입니다. 행 자체를 삭제해도 됩니다.</p>
+                                </div>
+                            </div>
+                        </div>
+                         <div>
+                            <h3 class="text-2xl font-bold mb-4">동기화 실행하기</h3>
+                            <div class="p-6 bg-teal-50 border-l-4 border-teal-500 rounded-r-lg">
+                                <ol class="list-decimal list-inside space-y-2">
+                                    <li>상단 메뉴에서 **[동기화 관리] > [캘린더/Tasks와 동기화 실행]**을 클릭하세요.</li>
+                                    <li>변경될 내용을 요약한 확인창이 뜨면 **[Yes]** 버튼을 누릅니다.</li>
+                                    <li>잠시 후 완료 메시지가 뜨면, 구글 캘린더와 Tasks 앱에서 결과를 확인하세요!</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+             <!-- Troubleshooting Section -->
+            <section id="troubleshooting" class="content-section">
+                <div class="bg-white p-8 rounded-2xl shadow-sm">
+                    <h2 class="text-3xl font-bold mb-4 text-teal-800">🆘 문제 해결 및 고급 기능</h2>
+                    <p class="text-lg text-slate-600 mb-8">일정이 잘못 만들어졌거나 더 고급 기능을 사용하고 싶을 때 이 섹션을 참고하세요. 핵심 원리는 모든 수정은 **구글 시트에서 먼저** 이루어져야 한다는 것입니다.</p>
+
+                    <h3 class="text-2xl font-bold mt-8 mb-4">상황별 해결 방법</h3>
+                    <div class="space-y-4">
+                        <div class="p-5 border border-slate-200 rounded-lg">
+                            <h4 class="font-bold text-xl mb-2">상황 1: 간단한 내용 수정</h4>
+                            <p>시트에서 잘못된 셀을 올바르게 수정하고, 동기화를 재실행하면 내용이 업데이트됩니다.</p>
+                        </div>
+                        <div class="p-5 border border-slate-200 rounded-lg">
+                            <h4 class="font-bold text-xl mb-2">상황 2: 일정 개별 초기화</h4>
+                             <p class="mb-2">내용이 너무 엉망이 되어 새로 만들고 싶을 때 사용합니다.</p>
+                            <ol class="list-decimal list-inside space-y-1">
+                                <li><strong>연결고리 끊기:</strong> 초기화하고 싶은 행의 `Sync ID` 셀 내용을 깨끗하게 지웁니다.</li>
+                                <li><strong>(선택) 기존 일정 삭제:</strong> 캘린더/Tasks 앱에서 잘못된 일정을 직접 삭제합니다.</li>
+                                <li><strong>시트 내용 수정:</strong> 시트에서 원하는 대로 내용을 올바르게 수정합니다.</li>
+                                <li><strong>동기화 재실행:</strong> 새 항목으로 인식하여 다시 만들어줍니다.</li>
+                            </ol>
+                        </div>
+                        <div class="p-5 border border-red-200 bg-red-50 rounded-lg">
+                            <h4 class="font-bold text-xl mb-2 text-red-800">💣 상황 3: 전체 초기화 (최후의 수단)</h4>
+                             <p class="mb-2 text-red-700">⚠️ **경고:** 이 작업을 하면 연결된 모든 캘린더/Tasks 항목이 삭제될 수 있습니다. 신중하게 진행하세요!</p>
+                            <ol class="list-decimal list-inside space-y-1 text-red-900">
+                                <li>`데이터` 시트에서 `Sync ID` 열 전체를 선택하고 모든 ID를 지웁니다.</li>
+                                <li>`동기화이력` 시트 자체를 삭제합니다. (아래 내용 참고)</li>
+                                <li>시트의 모든 행을 점검하고 잘못된 데이터를 수정합니다.</li>
+                                <li>전체 동기화를 실행하여 모든 항목을 새로 생성합니다.</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <h3 class="text-2xl font-bold mt-12 mb-4">🕵️ `동기화 이력` 시트의 비밀 (고급 사용자용)</h3>
+                    <p class="mb-4">동기화를 한번 실행하면, **`동기화이력`**이라는 시트가 숨겨진 채로 생성됩니다. 이 시트는 스크립트의 '기억 노트'로, 삭제된 행을 감지하는 핵심 역할을 합니다. 평상시에는 절대 만질 필요가 없지만, 문제가 생겼거나 완벽한 초기화가 필요할 때만 신경 쓰면 됩니다.</p>
+                     <p>✅ **[보기] > [숨겨진 시트]** 메뉴에서 `동기화이력`을 보거나 삭제할 수 있습니다.</p>
+
+                    <h3 class="text-2xl font-bold mt-12 mb-4">(고급 기능) 캘린더 색상 규칙 사용하기</h3>
+                    <p class="mb-4">`색상 규칙` 시트에서 특정 단어가 포함될 때 캘린더 이벤트 색상을 바꿀 수 있습니다.</p>
+                    <div class="overflow-x-auto">
+                        <table class="table-auto w-full text-left">
+                            <thead class="bg-slate-100"><tr><th>대상 열 설정 이름</th><th>검색 값</th><th>색상 ID</th><th>설명</th></tr></thead>
+                            <tbody>
+                                <tr><td>`학년 열 번호`</td><td>`3학년`</td><td>`2`</td><td>'학년' 열에 '3학년' 글자가 있으면 캘린더 색상을 2번(연두색)으로!</td></tr>
+                                <tr><td>`제목 열 번호`</td><td>`[중요]`</td><td>`11`</td><td>'제목' 열에 `[중요]` 글자가 있으면 캘린더 색상을 11번(빨간색)으로!</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const navLinks = document.querySelectorAll('#sidebar-nav a');
+            const mobileNav = document.getElementById('mobile-nav');
+            const contentSections = document.querySelectorAll('.content-section');
+            const accordionHeaders = document.querySelectorAll('.accordion-header');
+
+            function setActiveSection(hash) {
+                const targetHash = hash || '#intro';
+                
+                navLinks.forEach(link => {
+                    link.classList.toggle('active', link.getAttribute('href') === targetHash);
+                });
+
+                contentSections.forEach(section => {
+                    section.classList.toggle('active', '#' + section.id === targetHash);
+                });
+
+                if(mobileNav.value !== targetHash) {
+                    mobileNav.value = targetHash;
+                }
+                
+                window.scrollTo(0, 0);
+            }
+
+            // Sidebar navigation
+            navLinks.forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetHash = this.getAttribute('href');
+                    setActiveSection(targetHash);
+                    history.pushState(null, null, targetHash);
+                });
+            });
+
+            // Mobile navigation
+            mobileNav.addEventListener('change', function() {
+                const targetHash = this.value;
+                setActiveSection(targetHash);
+                history.pushState(null, null, targetHash);
+            });
+
+            // Accordion functionality
+            accordionHeaders.forEach(header => {
+                header.addEventListener('click', function () {
+                    const content = this.nextElementSibling;
+                    const icon = this.querySelector('span');
+                    
+                    this.parentElement.classList.toggle('open');
+
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                        icon.style.transform = 'rotate(0deg)';
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                        icon.style.transform = 'rotate(180deg)';
+                    }
+                });
+            });
+
+            // Handle browser back/forward
+            window.addEventListener('popstate', function() {
+                setActiveSection(location.hash);
+            });
+
+            // Initial load
+            setActiveSection(location.hash || '#intro');
+        });
+    </script>
+</body>
+</html>
